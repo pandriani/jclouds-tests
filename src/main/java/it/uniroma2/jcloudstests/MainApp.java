@@ -63,10 +63,11 @@ import com.google.common.net.HostAndPort;
  */
 public class MainApp {
 	
+    private static final boolean IS_SET_PROXY = false;
+
 	public static String AWS_REGION = Region.EU_WEST_1;
 	public static String command = "create";
 	//public static String command = "destroy";
-	
 	public static String AMI = "ami-f3595f87"; //Ubuntu 12.04 LTS Precise EBS boot
 
 	
@@ -78,6 +79,14 @@ public class MainApp {
 		String SECRET_KEY = p.getProperty(AWS.SECRET_KEY.name());
 		String KEY_NAME = p.getProperty(AWS.KEY_NAME.name());
 		// Args
+	
+		// set proxy If needed 		
+	
+		
+		
+		if (IS_SET_PROXY){
+			setProxy();
+		}
 
 		// Init
 		RestContext<EC2Client, EC2AsyncClient> context = new ComputeServiceContextFactory()
@@ -112,6 +121,24 @@ public class MainApp {
 
 	}
 
+	private static void setProxy(){
+		try{
+			PropertiesReader proxyProp = new PropertiesReader("proxy.properties");
+			for (Object key : proxyProp.keySet()){
+				System.setProperty(key.toString(), proxyProp.getProperty(key.toString()));
+				if (key.toString().equals("http.proxyHost")){ 
+					System.out.println("set proxy host: " + proxyProp.getProperty(key.toString()));
+				}
+			}
+			
+			System.out.print(" correctly");
+		}catch (Exception e) {
+			System.out.println("No proxy set. Check your proxy.properties file");
+		}
+
+	}
+
+	
 	private static void destroySecurityGroupKeyPairAndInstance(
 			EC2Client client, String name) {
 		try {
