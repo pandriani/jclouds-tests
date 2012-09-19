@@ -65,8 +65,8 @@ public class MainApp {
     private static final boolean IS_SET_PROXY = false;
 
 	public static String AWS_REGION = Region.EU_WEST_1;
-	public static String command = "create";
-	//public static String command = "destroy";
+	//public static String command = "create";
+	public static String command = "destroy";
 	public static String AMI = "ami-f3595f87"; //Ubuntu 12.04 LTS Precise EBS boot
 
 	
