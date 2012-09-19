@@ -62,7 +62,7 @@ import com.google.common.net.HostAndPort;
  */
 public class MainApp {
 	
-    private static final boolean IS_SET_PROXY = false;
+    private static final boolean IS_SET_PROXY = true;
 
 	public static String AWS_REGION = Region.EU_WEST_1;
 	public static String command = "create";
