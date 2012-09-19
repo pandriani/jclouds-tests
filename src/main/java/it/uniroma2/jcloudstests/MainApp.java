@@ -81,9 +81,6 @@ public class MainApp {
 		// Args
 	
 		// set proxy If needed 		
-	
-		
-		
 		if (IS_SET_PROXY){
 			setProxy();
 		}
