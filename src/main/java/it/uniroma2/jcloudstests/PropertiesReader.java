@@ -18,4 +18,10 @@ public class PropertiesReader extends Properties{
 		load(getClass().getClassLoader().getResourceAsStream(resourceName));
 	}
 	
+	
+	
+	public static void main(String[] args) throws IOException{
+			PropertiesReader p = new PropertiesReader("uniroma2.properties");
+			System.out.println(p.get(AWS.ACCESS_KEY_ID));
+	}
 }
