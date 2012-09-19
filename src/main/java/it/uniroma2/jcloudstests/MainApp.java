@@ -21,7 +21,6 @@ package it.uniroma2.jcloudstests;
 
 import static org.jclouds.ec2.options.RunInstancesOptions.Builder.asType;
 import static org.jclouds.scriptbuilder.domain.Statements.exec;
-
 import it.uniroma2.jcloudstests.PropertiesReader.AWS;
 
 import java.io.IOException;
@@ -31,8 +30,8 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import org.jclouds.ContextBuilder;
 import org.jclouds.aws.domain.Region;
-import org.jclouds.compute.ComputeServiceContextFactory;
 import org.jclouds.ec2.EC2AsyncClient;
 import org.jclouds.ec2.EC2Client;
 import org.jclouds.ec2.domain.InstanceState;
@@ -86,9 +85,10 @@ public class MainApp {
 		}
 
 		// Init
-		RestContext<EC2Client, EC2AsyncClient> context = new ComputeServiceContextFactory()
-				.createContext("aws-ec2", ACCESS_KEY_ID, SECRET_KEY)
-				.getProviderSpecificContext();
+//		RestContext<EC2Client, EC2AsyncClient> context = new ComputeServiceContextFactory()
+//				.createContext("aws-ec2", ACCESS_KEY_ID, SECRET_KEY)
+//				.getProviderSpecificContext();
+		RestContext<EC2Client, EC2AsyncClient>  context = ContextBuilder.newBuilder("aws-ec2").credentials(ACCESS_KEY_ID, SECRET_KEY).build();
 
 		// Get a synchronous client
 		EC2Client client = context.getApi();
