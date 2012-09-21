@@ -152,7 +152,8 @@ public class MainApp {
 		try {
 			System.out.printf("%d: %s deleting keypair%n",
 					System.currentTimeMillis(), name);
-			client.getKeyPairServices().deleteKeyPairInRegion(AWS_REGION, name);
+			//in order to not delete the key pair
+			//client.getKeyPairServices().deleteKeyPairInRegion(AWS_REGION, name);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
