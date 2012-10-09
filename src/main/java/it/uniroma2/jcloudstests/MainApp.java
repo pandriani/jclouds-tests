@@ -180,6 +180,7 @@ public class MainApp {
 		return blockUntilInstanceRunning(client, instance);
 	}
 
+	
 	static void createSecurityGroupAndAuthorizePorts(EC2Client client,
 			String name) {
 		System.out.printf("%d: creating security group: %s%n",
