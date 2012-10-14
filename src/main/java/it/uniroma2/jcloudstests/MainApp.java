@@ -67,7 +67,7 @@ public class MainApp {
 	public static String AWS_REGION = Region.EU_WEST_1;
 	public static String command = "create";
 	//public static String command = "destroy";
-	public static String AMI = "ami-f3595f87"; //Ubuntu 12.04 LTS Precise instance store
+	public static String AMI = "ami-e9aaab9d"; // Alestic Ubuntu 12.04 LTS Precise instance store
 
 	
 	
