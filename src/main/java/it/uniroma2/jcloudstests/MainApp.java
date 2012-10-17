@@ -171,7 +171,7 @@ public class MainApp {
 	private static RunningInstance createSecurityGroupKeyPairAndInstance(
 			EC2Client client, String name) throws TimeoutException {
 		// create a new security group
-//		createSecurityGroupAndAuthorizePorts(client, name);
+		//createSecurityGroupAndAuthorizePorts(client, name);
 
 		// create a new instance
 		RunningInstance instance = runInstance(client, name, name);
