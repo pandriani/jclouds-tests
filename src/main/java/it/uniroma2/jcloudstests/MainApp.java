@@ -64,7 +64,7 @@ public class MainApp {
 	
     private static final boolean IS_SET_PROXY = false;
 
-	public static String AWS_REGION = Region.EU_WEST_1;
+	public static String AWS_DEFAULT_REGION = Region.US_WEST_1;
 	public static String command = "create";
 	//public static String command = "destroy";
 	public static String AMI = "ami-e9aaab9d"; // Alestic Ubuntu 12.04 LTS Precise instance store
@@ -142,7 +142,7 @@ public class MainApp {
 			String id = findInstanceByKeyName(client, name).getId();
 			System.out.printf("%d: %s terminating instance%n",
 					System.currentTimeMillis(), id);
-			client.getInstanceServices().terminateInstancesInRegion(AWS_REGION,
+			client.getInstanceServices().terminateInstancesInRegion(AWS_DEFAULT_REGION,
 					findInstanceByKeyName(client, name).getId());
 		} catch (NoSuchElementException e) {
 		} catch (Exception e) {
@@ -161,7 +161,7 @@ public class MainApp {
 		try {
 			System.out.printf("%d: %s deleting group%n",
 					System.currentTimeMillis(), name);
-			client.getSecurityGroupServices().deleteSecurityGroupInRegion(AWS_REGION,
+			client.getSecurityGroupServices().deleteSecurityGroupInRegion(AWS_DEFAULT_REGION,
 					name);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -185,11 +185,11 @@ public class MainApp {
 			String name) {
 		System.out.printf("%d: creating security group: %s%n",
 				System.currentTimeMillis(), name);
-		client.getSecurityGroupServices().createSecurityGroupInRegion(AWS_REGION,
+		client.getSecurityGroupServices().createSecurityGroupInRegion(AWS_DEFAULT_REGION,
 				name, name);
 		for (int port : new int[] { 80, 8080, 443, 22 }) {
 			client.getSecurityGroupServices()
-					.authorizeSecurityGroupIngressInRegion(AWS_REGION, name,
+					.authorizeSecurityGroupIngressInRegion(AWS_DEFAULT_REGION, name,
 							IpProtocol.TCP, port, port, "0.0.0.0/0");
 		}
 	}
@@ -198,7 +198,7 @@ public class MainApp {
 		System.out.printf("%d: Get key: %s%n",
 				System.currentTimeMillis(), name);
 		
-		Set<KeyPair> keypairs = client.getKeyPairServices().describeKeyPairsInRegion(AWS_REGION, name);
+		Set<KeyPair> keypairs = client.getKeyPairServices().describeKeyPairsInRegion(AWS_DEFAULT_REGION, name);
 		Iterator<KeyPair> it = keypairs.iterator();
 		KeyPair keyPair = null;
 		while (it.hasNext()) {
@@ -221,7 +221,7 @@ public class MainApp {
 		System.out.printf("%d: running instance%n", System.currentTimeMillis());
 
 		Reservation<? extends RunningInstance> reservation = client
-				.getInstanceServices().runInstancesInRegion(AWS_REGION, null, // allow
+				.getInstanceServices().runInstancesInRegion(AWS_DEFAULT_REGION, null, // allow
 																		// ec2
 																		// to
 																		// chose
@@ -285,7 +285,7 @@ public class MainApp {
 			String instanceId) {
 		// search my account for the instance I just created
 		Set<? extends Reservation<? extends RunningInstance>> reservations = client
-				.getInstanceServices().describeInstancesInRegion(AWS_REGION,
+				.getInstanceServices().describeInstancesInRegion(AWS_DEFAULT_REGION,
 						instanceId); // last parameter (ids) narrows the
 		// search
 
@@ -297,7 +297,7 @@ public class MainApp {
 			final String keyName) {
 		// search my account for the instance I just created
 		Set<? extends Reservation<? extends RunningInstance>> reservations = client
-				.getInstanceServices().describeInstancesInRegion(AWS_REGION);
+				.getInstanceServices().describeInstancesInRegion(AWS_DEFAULT_REGION);
 
 		// extract all the instances from all reservations
 		Set<RunningInstance> allInstances = Sets.newHashSet();
