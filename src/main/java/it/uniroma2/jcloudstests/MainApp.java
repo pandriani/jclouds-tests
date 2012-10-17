@@ -64,10 +64,10 @@ public class MainApp {
 	
     private static final boolean IS_SET_PROXY = false;
 
-	public static String AWS_DEFAULT_REGION = Region.US_WEST_1;
+	public static String AWS_DEFAULT_REGION = Region.US_EAST_1;
 	public static String command = "create";
 	//public static String command = "destroy";
-	public static String AMI = "ami-e9aaab9d"; // Alestic Ubuntu 12.04 LTS Precise instance store
+	public static String AMI = "ami-834cf1ea"; // Alestic Ubuntu 12.04 LTS Precise instance store
 
 	
 	
@@ -161,8 +161,8 @@ public class MainApp {
 		try {
 			System.out.printf("%d: %s deleting group%n",
 					System.currentTimeMillis(), name);
-			client.getSecurityGroupServices().deleteSecurityGroupInRegion(AWS_DEFAULT_REGION,
-					name);
+//			client.getSecurityGroupServices().deleteSecurityGroupInRegion(AWS_DEFAULT_REGION,
+//					name);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
