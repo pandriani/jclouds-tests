@@ -21,7 +21,8 @@ package it.uniroma2.jcloudstests;
 
 import static org.jclouds.ec2.options.RunInstancesOptions.Builder.asType;
 import static org.jclouds.scriptbuilder.domain.Statements.exec;
-import it.uniroma2.jcloudstests.PropertiesReader.AWS;
+import it.uniroma2.util.PropertiesReader;
+import it.uniroma2.util.PropertiesReader.CloudProviders;
 
 import java.io.IOException;
 import java.util.Iterator;
@@ -41,13 +42,17 @@ import org.jclouds.ec2.domain.KeyPair;
 import org.jclouds.ec2.domain.Reservation;
 import org.jclouds.ec2.domain.RunningInstance;
 import org.jclouds.ec2.predicates.InstanceStateRunning;
+import org.jclouds.enterprise.config.EnterpriseConfigurationModule;
+import org.jclouds.logging.slf4j.config.SLF4JLoggingModule;
 import org.jclouds.predicates.InetSocketAddressConnect;
 import org.jclouds.predicates.RetryablePredicate;
 import org.jclouds.rest.RestContext;
 import org.jclouds.scriptbuilder.ScriptBuilder;
 import org.jclouds.scriptbuilder.domain.OsFamily;
+import org.jclouds.sshj.config.SshjSshClientModule;
 
 import com.google.common.base.Predicate;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
 import com.google.common.net.HostAndPort;
@@ -60,35 +65,43 @@ import com.google.common.net.HostAndPort;
  * create destroy
  * 
  */
-public class MainApp {
-	
-    private static final boolean IS_SET_PROXY = false;
+public class TestAWSCompute {
+
+	private static final boolean IS_SET_PROXY = false;
 
 	public static String AWS_DEFAULT_REGION = Region.US_EAST_1;
 	public static String command = "create";
-	//public static String command = "destroy";
-	public static String AMI = "ami-834cf1ea"; // Alestic Ubuntu 12.04 LTS Precise instance store
+	// public static String command = "destroy";
+	public static String AMI = "ami-834cf1ea"; // Alestic Ubuntu 12.04 LTS
+												// Precise instance store
 
-	
-	
 	public static void main(String[] args) throws TimeoutException, IOException {
 		PropertiesReader p = new PropertiesReader("uniroma2.properties");
-		
-		String ACCESS_KEY_ID = p.getProperty(AWS.ACCESS_KEY_ID.name());
-		String SECRET_KEY = p.getProperty(AWS.SECRET_KEY.name());
-		String KEY_NAME = p.getProperty(AWS.KEY_NAME.name());
+
+		String AWS_ACCESS_KEY_ID = p
+				.getProperty(CloudProviders.AWS_ACCESS_KEY_ID.name());
+		String AWS_SECRET_KEY = p.getProperty(CloudProviders.AWS_SECRET_KEY
+				.name());
+		String AWS_KEY_NAME = p.getProperty(CloudProviders.AWS_KEY_NAME.name());
 		// Args
-	
-		// set proxy If needed 		
-		if (IS_SET_PROXY){
+
+		// set proxy If needed
+		if (IS_SET_PROXY) {
 			setProxy();
 		}
 
 		// Init
-//		RestContext<EC2Client, EC2AsyncClient> context = new ComputeServiceContextFactory()
-//				.createContext("aws-ec2", ACCESS_KEY_ID, SECRET_KEY)
-//				.getProviderSpecificContext();
-		RestContext<EC2Client, EC2AsyncClient>  context = ContextBuilder.newBuilder("aws-ec2").credentials(ACCESS_KEY_ID, SECRET_KEY).build();
+		// RestContext<EC2Client, EC2AsyncClient> context = new
+		// ComputeServiceContextFactory()
+		// .createContext("aws-ec2", ACCESS_KEY_ID, SECRET_KEY)
+		// .getProviderSpecificContext();
+		RestContext<EC2Client, EC2AsyncClient> context = ContextBuilder
+				.newBuilder("aws-ec2")
+				.credentials(AWS_ACCESS_KEY_ID, AWS_SECRET_KEY)
+				.modules(
+						ImmutableSet.of(new SshjSshClientModule(),
+								new SLF4JLoggingModule(),
+								new EnterpriseConfigurationModule())).build();
 
 		// Get a synchronous client
 		EC2Client client = context.getApi();
@@ -96,10 +109,10 @@ public class MainApp {
 		try {
 			if (command.equals("create")) {
 
-				KeyPair pair = createKeyPair(client, KEY_NAME);
+				KeyPair pair = createKeyPair(client, AWS_KEY_NAME);
 				System.out.println("KeyPair fingerprint: " + pair);
 				RunningInstance instance = createSecurityGroupKeyPairAndInstance(
-						client, KEY_NAME);
+						client, AWS_KEY_NAME);
 
 				System.out.printf("instance %s ready%n", instance.getId());
 				System.out.printf("ip address: %s%n", instance.getIpAddress());
@@ -108,7 +121,7 @@ public class MainApp {
 						pair.getKeyMaterial());
 
 			} else if (command.equals("destroy")) {
-				destroySecurityGroupKeyPairAndInstance(client, KEY_NAME);
+				destroySecurityGroupKeyPairAndInstance(client, AWS_KEY_NAME);
 			}
 		} finally {
 			// Close connecton
@@ -118,31 +131,35 @@ public class MainApp {
 
 	}
 
-	private static void setProxy(){
-		try{
-			PropertiesReader proxyProp = new PropertiesReader("proxy.properties");
-			for (Object key : proxyProp.keySet()){
-				System.setProperty(key.toString(), proxyProp.getProperty(key.toString()));
-				if (key.toString().equals("http.proxyHost")){ 
-					System.out.println("set proxy host: " + proxyProp.getProperty(key.toString()));
+	private static void setProxy() {
+		try {
+			PropertiesReader proxyProp = new PropertiesReader(
+					"proxy.properties");
+			for (Object key : proxyProp.keySet()) {
+				System.setProperty(key.toString(),
+						proxyProp.getProperty(key.toString()));
+				if (key.toString().equals("http.proxyHost")) {
+					System.out.println("set proxy host: "
+							+ proxyProp.getProperty(key.toString()));
 				}
 			}
-			
+
 			System.out.print(" correctly");
-		}catch (Exception e) {
-			System.out.println("No proxy set. Check your proxy.properties file");
+		} catch (Exception e) {
+			System.out
+					.println("No proxy set. Check your proxy.properties file");
 		}
 
 	}
 
-	
 	private static void destroySecurityGroupKeyPairAndInstance(
 			EC2Client client, String name) {
 		try {
 			String id = findInstanceByKeyName(client, name).getId();
 			System.out.printf("%d: %s terminating instance%n",
 					System.currentTimeMillis(), id);
-			client.getInstanceServices().terminateInstancesInRegion(AWS_DEFAULT_REGION,
+			client.getInstanceServices().terminateInstancesInRegion(
+					AWS_DEFAULT_REGION,
 					findInstanceByKeyName(client, name).getId());
 		} catch (NoSuchElementException e) {
 		} catch (Exception e) {
@@ -152,8 +169,9 @@ public class MainApp {
 		try {
 			System.out.printf("%d: %s deleting keypair%n",
 					System.currentTimeMillis(), name);
-			//in order to not delete the key pair
-			//client.getKeyPairServices().deleteKeyPairInRegion(AWS_REGION, name);
+			// in order to not delete the key pair
+			// client.getKeyPairServices().deleteKeyPairInRegion(AWS_REGION,
+			// name);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -161,8 +179,8 @@ public class MainApp {
 		try {
 			System.out.printf("%d: %s deleting group%n",
 					System.currentTimeMillis(), name);
-//			client.getSecurityGroupServices().deleteSecurityGroupInRegion(AWS_DEFAULT_REGION,
-//					name);
+			// client.getSecurityGroupServices().deleteSecurityGroupInRegion(AWS_DEFAULT_REGION,
+			// name);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -171,7 +189,7 @@ public class MainApp {
 	private static RunningInstance createSecurityGroupKeyPairAndInstance(
 			EC2Client client, String name) throws TimeoutException {
 		// create a new security group
-		//createSecurityGroupAndAuthorizePorts(client, name);
+		// createSecurityGroupAndAuthorizePorts(client, name);
 
 		// create a new instance
 		RunningInstance instance = runInstance(client, name, name);
@@ -180,32 +198,33 @@ public class MainApp {
 		return blockUntilInstanceRunning(client, instance);
 	}
 
-	
 	static void createSecurityGroupAndAuthorizePorts(EC2Client client,
 			String name) {
 		System.out.printf("%d: creating security group: %s%n",
 				System.currentTimeMillis(), name);
-		client.getSecurityGroupServices().createSecurityGroupInRegion(AWS_DEFAULT_REGION,
-				name, name);
+		client.getSecurityGroupServices().createSecurityGroupInRegion(
+				AWS_DEFAULT_REGION, name, name);
 		for (int port : new int[] { 80, 8080, 443, 22 }) {
 			client.getSecurityGroupServices()
-					.authorizeSecurityGroupIngressInRegion(AWS_DEFAULT_REGION, name,
-							IpProtocol.TCP, port, port, "0.0.0.0/0");
+					.authorizeSecurityGroupIngressInRegion(AWS_DEFAULT_REGION,
+							name, IpProtocol.TCP, port, port, "0.0.0.0/0");
 		}
 	}
 
 	static KeyPair createKeyPair(EC2Client client, String name) {
-		System.out.printf("%d: Get key: %s%n",
-				System.currentTimeMillis(), name);
-		
-		Set<KeyPair> keypairs = client.getKeyPairServices().describeKeyPairsInRegion(AWS_DEFAULT_REGION, name);
+		System.out
+				.printf("%d: Get key: %s%n", System.currentTimeMillis(), name);
+
+		Set<KeyPair> keypairs = client.getKeyPairServices()
+				.describeKeyPairsInRegion(AWS_DEFAULT_REGION, name);
 		Iterator<KeyPair> it = keypairs.iterator();
 		KeyPair keyPair = null;
 		while (it.hasNext()) {
 			keyPair = it.next();
 			System.out.println(keyPair);
 		}
-		return keyPair;//client.getKeyPairServices().describeKeyPairsInRegion(AWS_REGION, name).iterator().next();
+		return keyPair;// client.getKeyPairServices().describeKeyPairsInRegion(AWS_REGION,
+						// name).iterator().next();
 	}
 
 	static RunningInstance runInstance(EC2Client client,
@@ -221,15 +240,16 @@ public class MainApp {
 		System.out.printf("%d: running instance%n", System.currentTimeMillis());
 
 		Reservation<? extends RunningInstance> reservation = client
-				.getInstanceServices().runInstancesInRegion(AWS_DEFAULT_REGION, null, // allow
-																		// ec2
-																		// to
-																		// chose
-																		// an
-																		// availability
-																		// zone
+				.getInstanceServices().runInstancesInRegion(AWS_DEFAULT_REGION,
+						null, // allow
+						// ec2
+						// to
+						// chose
+						// an
+						// availability
+						// zone
 						AMI, // alestic ami allows auto-invoke of
-										// user data scripts
+								// user data scripts
 						1, // minimum instances
 						1, // maximum instances
 						asType(InstanceType.M1_SMALL) // smallest instance size
@@ -263,7 +283,8 @@ public class MainApp {
 				new InetSocketAddressConnect(), 300, 1, TimeUnit.SECONDS);
 		System.out.printf("%d: %s awaiting ssh service to start%n",
 				System.currentTimeMillis(), instance.getIpAddress());
-		if (!socketTester.apply(HostAndPort.fromParts(instance.getIpAddress(), 22)))
+		if (!socketTester.apply(HostAndPort.fromParts(instance.getIpAddress(),
+				22)))
 			throw new TimeoutException("timeout waiting for ssh to start: "
 					+ instance.getIpAddress());
 
@@ -272,7 +293,8 @@ public class MainApp {
 
 		System.out.printf("%d: %s awaiting http service to start%n",
 				System.currentTimeMillis(), instance.getIpAddress());
-		if (!socketTester.apply(HostAndPort.fromParts(instance.getIpAddress(), 80)))
+		if (!socketTester.apply(HostAndPort.fromParts(instance.getIpAddress(),
+				80)))
 			throw new TimeoutException("timeout waiting for http to start: "
 					+ instance.getIpAddress());
 
@@ -285,8 +307,9 @@ public class MainApp {
 			String instanceId) {
 		// search my account for the instance I just created
 		Set<? extends Reservation<? extends RunningInstance>> reservations = client
-				.getInstanceServices().describeInstancesInRegion(AWS_DEFAULT_REGION,
-						instanceId); // last parameter (ids) narrows the
+				.getInstanceServices().describeInstancesInRegion(
+						AWS_DEFAULT_REGION, instanceId); // last parameter (ids)
+															// narrows the
 		// search
 
 		// since we refined by instanceId there should only be one instance
@@ -297,7 +320,8 @@ public class MainApp {
 			final String keyName) {
 		// search my account for the instance I just created
 		Set<? extends Reservation<? extends RunningInstance>> reservations = client
-				.getInstanceServices().describeInstancesInRegion(AWS_DEFAULT_REGION);
+				.getInstanceServices().describeInstancesInRegion(
+						AWS_DEFAULT_REGION);
 
 		// extract all the instances from all reservations
 		Set<RunningInstance> allInstances = Sets.newHashSet();
