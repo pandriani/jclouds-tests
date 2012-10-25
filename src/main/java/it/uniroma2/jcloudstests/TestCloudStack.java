@@ -74,6 +74,7 @@ public class TestCloudStack {
 		while(vmIt.hasNext()){
 			VirtualMachine vm = vmIt.next();
 			System.out.println(vm);
+			System.out.println(vm.getName());
 		}
 	}
 
