@@ -1,80 +1,85 @@
 package it.uniroma2.jcloudstests;
 
-import it.uniroma2.util.PropertiesReader;
-import it.uniroma2.util.PropertiesReader.CloudProviders;
+import it.uniroma2.cloud.PROVIDER;
+import it.uniroma2.cloud.ProviderFactory;
+import it.uniroma2.cloud.util.PropertiesMap;
+import it.uniroma2.cloud.util.PropertiesMap.CloudProviderProperty;
+import it.uniroma2.cloud.util.ProviderHelper;
+import it.uniroma2.cloud.util.ProviderHelperFactory;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.Set;
 
-import org.jclouds.ContextBuilder;
-import org.jclouds.cloudstack.CloudStackAsyncClient;
-import org.jclouds.cloudstack.CloudStackClient;
-import org.jclouds.cloudstack.CloudStackDomainAsyncClient;
-import org.jclouds.cloudstack.CloudStackDomainClient;
-import org.jclouds.cloudstack.CloudStackGlobalAsyncClient;
-import org.jclouds.cloudstack.CloudStackGlobalClient;
-import org.jclouds.cloudstack.domain.Capabilities;
-import org.jclouds.cloudstack.domain.SecurityGroup;
-import org.jclouds.cloudstack.domain.VirtualMachine;
-import org.jclouds.cloudstack.features.ConfigurationClient;
-import org.jclouds.cloudstack.features.HypervisorClient;
-import org.jclouds.cloudstack.features.NetworkClient;
-import org.jclouds.cloudstack.features.SecurityGroupClient;
-import org.jclouds.cloudstack.features.VirtualMachineClient;
-import org.jclouds.enterprise.config.EnterpriseConfigurationModule;
-
-import org.jclouds.logging.slf4j.config.SLF4JLoggingModule;
-import org.jclouds.providers.ProviderMetadata;
-import org.jclouds.providers.Providers;
-import org.jclouds.rest.RestContext;
-import org.jclouds.sshj.config.SshjSshClientModule;
-
-import com.google.common.collect.ImmutableSet;
-import com.google.inject.Module;
+import org.jclouds.compute.ComputeService;
+import org.jclouds.compute.RunNodesException;
+import org.jclouds.compute.domain.NodeMetadata;
+import org.jclouds.compute.domain.Template;
+import org.jclouds.compute.domain.TemplateBuilder;
+import org.jclouds.compute.options.TemplateOptions;
+import org.jclouds.domain.LoginCredentials;
+import org.jclouds.io.Payloads;
+import org.jclouds.scriptbuilder.statements.chef.InstallChefGems;
+import org.jclouds.ssh.SshClient;
 
 public class TestCloudStack {
 
+	private static final PropertiesMap p = PropertiesMap.getInstance();
+	private static final PROVIDER provider = PROVIDER.CLOUDSTACK;
+	
+	
 	/**
 	 * @param args
 	 * @throws IOException
 	 */
 	public static void main(String[] args) throws IOException {
-		PropertiesReader p = new PropertiesReader("uniroma2.properties");
-
-		String CLOUDSTACK_URL = p.getProperty(CloudProviders.CLOUDSTACK_URL
-				.name());
-		String CLOUDSTACK_API_KEY = p
-				.getProperty(CloudProviders.CLOUDSTACK_API_KEY.name());
-		String CLOUDSTACK_SECRET_KEY = p
-				.getProperty(CloudProviders.CLOUDSTACK_SECRET_KEY.name());
-		System.out.println(CLOUDSTACK_URL);
-
-		Iterable<Module> modules = ImmutableSet.<Module> of(
-				new SshjSshClientModule(), new SLF4JLoggingModule(),
-				new EnterpriseConfigurationModule());
-
-		RestContext<CloudStackClient, CloudStackAsyncClient> context = ContextBuilder
-				.newBuilder("cloudstack")
-				.credentials(CLOUDSTACK_API_KEY, CLOUDSTACK_SECRET_KEY)
-				.modules(modules).endpoint(CLOUDSTACK_URL).build();
-
-		System.out.println(context.getId());
-
-		// Get a synchronous client
-		CloudStackClient client = context.getApi();
-
-		ConfigurationClient configurationClient = client.getConfigurationClient();
-		Capabilities caps = configurationClient.listCapabilities();
-		System.out.println(caps.toString());
-
-		VirtualMachineClient vmClient = client.getVirtualMachineClient();
-		Set<VirtualMachine> vms = vmClient.listVirtualMachines();
-		Iterator<VirtualMachine> vmIt = vms.iterator();
-		while(vmIt.hasNext()){
-			VirtualMachine vm = vmIt.next();
-			System.out.println(vm);
-			System.out.println(vm.getName());
+		
+		
+		ComputeService computeService = ProviderFactory.createComputeService(provider);
+		ProviderHelper helper = ProviderHelperFactory.getProviderHelper(provider);
+		
+		Iterable<? extends NodeMetadata> nodes = helper.listRunningNodesInGroup(computeService, "worker-node");
+		Iterator<? extends NodeMetadata> nodeIt = nodes.iterator();
+		while(nodeIt.hasNext()){
+			NodeMetadata node = nodeIt.next();
+			System.out.println(node);	
+		}
+		TemplateBuilder templateBuilder = computeService.templateBuilder();
+		TemplateOptions opts = helper.overrideLoginCredential();
+		
+		Template t = templateBuilder.imageId(p.get(CloudProviderProperty.CLOUDSTACK_DEFAULT_IMAGE)).smallest().options(opts).build();
+		try {
+			Set<? extends NodeMetadata> nodeSet = computeService.createNodesInGroup("worker-node", 1, t);
+			
+			Iterator<? extends NodeMetadata> itNode = nodeSet.iterator();
+			while (itNode.hasNext()) {
+				NodeMetadata node = (NodeMetadata) itNode.next();
+				System.out.println(node);
+				
+				//ssh chef cookbook
+				SshClient ssh = computeService.getContext().getUtils().sshForNode().apply(node);
+				ssh.connect();
+				ssh.exec("date");
+				ssh.put("/tmp/mysql-1.3.0.tar.gz",
+				    Payloads.newFilePayload(new File("/Users/pandriani/mysql-1.3.0.tar.gz")));
+				ssh.disconnect();
+				//ssh chef cookbook
+				
+				computeService.runScriptOnNode(node.getId(), new InstallChefGems(), TemplateOptions.Builder.overrideLoginCredentials(LoginCredentials.builder().
+	            user(p.get(CloudProviderProperty.CLOUDSTACK_IMAGE_USER)).password(p.get(CloudProviderProperty.CLOUDSTACK_IMAGE_PASSWORD)).authenticateSudo(true).build()));
+				
+//				computeService.runScriptOnNode(node.getId(), ChefSolo.builder()
+//				    .cookbooksArchiveLocation("/tmp/mysql-1.3.0.tar.gz")
+//				    .installRecipe("mysql")
+//				    .build());
+				
+			}
+						
+		} catch (RunNodesException e) {
+			e.printStackTrace();
+		}finally{
+			computeService.getContext().close();			
 		}
 	}
 
