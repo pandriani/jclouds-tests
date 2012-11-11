@@ -21,8 +21,8 @@ package it.uniroma2.jcloudstests;
 
 import static org.jclouds.ec2.options.RunInstancesOptions.Builder.asType;
 import static org.jclouds.scriptbuilder.domain.Statements.exec;
-import it.uniroma2.util.PropertiesReader;
-import it.uniroma2.util.PropertiesReader.CloudProviders;
+import it.uniroma2.cloud.util.PropertiesMap;
+import it.uniroma2.cloud.util.PropertiesMap.CloudProviderProperty;
 
 import java.io.IOException;
 import java.util.Iterator;
@@ -75,14 +75,14 @@ public class TestAWSCompute {
 	public static String AMI = "ami-834cf1ea"; // Alestic Ubuntu 12.04 LTS
 												// Precise instance store
 
+	public static final PropertiesMap p = PropertiesMap.getInstance();
+
 	public static void main(String[] args) throws TimeoutException, IOException {
-		PropertiesReader p = new PropertiesReader("uniroma2.properties");
 
 		String AWS_ACCESS_KEY_ID = p
-				.getProperty(CloudProviders.AWS_ACCESS_KEY_ID.name());
-		String AWS_SECRET_KEY = p.getProperty(CloudProviders.AWS_SECRET_KEY
-				.name());
-		String AWS_KEY_NAME = p.getProperty(CloudProviders.AWS_KEY_NAME.name());
+				.get(CloudProviderProperty.AWS_ACCESS_KEY_ID);
+		String AWS_SECRET_KEY = p.get(CloudProviderProperty.AWS_SECRET_KEY);
+		String AWS_KEY_NAME = p.get(CloudProviderProperty.AWS_KEY_NAME);
 		// Args
 
 		// set proxy If needed
@@ -132,23 +132,9 @@ public class TestAWSCompute {
 	}
 
 	private static void setProxy() {
-		try {
-			PropertiesReader proxyProp = new PropertiesReader(
-					"proxy.properties");
-			for (Object key : proxyProp.keySet()) {
-				System.setProperty(key.toString(),
-						proxyProp.getProperty(key.toString()));
-				if (key.toString().equals("http.proxyHost")) {
-					System.out.println("set proxy host: "
-							+ proxyProp.getProperty(key.toString()));
-				}
-			}
-
-			System.out.print(" correctly");
-		} catch (Exception e) {
-			System.out
-					.println("No proxy set. Check your proxy.properties file");
-		}
+		//TODO aggiungere le altre properties
+		System.setProperty("https.proxyHost",
+				p.get(CloudProviderProperty.HTTP_PROXYHOST));
 
 	}
 
