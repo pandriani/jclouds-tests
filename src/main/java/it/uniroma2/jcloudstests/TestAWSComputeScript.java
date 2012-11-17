@@ -58,10 +58,10 @@ public class TestAWSComputeScript {
 					.getNodeMetadata("us-east-1/i-0fa83873");
 			System.out.println(nodeMetadata);
 
-			ExecResponse resp = computeService.runScriptOnNode(
-					nodeMetadata.getId(), new InstallGit(),
-					helper.overrideLoginCredential());
-			System.out.println(resp.getOutput());
+//			ExecResponse resp = computeService.runScriptOnNode(
+//					nodeMetadata.getId(), new InstallGit(),
+//					helper.buildTemplateOptions());
+//			System.out.println(resp.getOutput());
 
 		} catch (Exception e) {
 			e.printStackTrace();

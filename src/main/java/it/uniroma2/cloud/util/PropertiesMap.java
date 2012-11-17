@@ -11,7 +11,7 @@ public class PropertiesMap {
 
 	public enum CloudProviderProperty {
 		// AWS
-		AWS_ACCESS_KEY_ID, AWS_SECRET_KEY, AWS_KEY_NAME, AWS_SECURITY_GROUP_NAME, AWS_KEY_PATH, AWS_AMI_USER,
+		AWS_ACCESS_KEY_ID, AWS_SECRET_KEY, AWS_KEY_NAME, AWS_SECURITY_GROUP_NAME, AWS_KEY_PATH, AWS_AMI_USER, AWS_DEFAULT_IMAGE,
 
 		// Cloudstack
 		CLOUDSTACK_URL, CLOUDSTACK_API_KEY, CLOUDSTACK_SECRET_KEY,CLOUDSTACK_DEFAULT_IMAGE,CLOUDSTACK_IMAGE_USER, CLOUDSTACK_IMAGE_PASSWORD,
@@ -23,6 +23,7 @@ public class PropertiesMap {
 	private static PropertiesMap instance = null;
 	private HashMap<String, String> map;
 
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	private PropertiesMap() {
 		try {
 			Properties p = new Properties();

@@ -3,7 +3,11 @@ package it.uniroma2.cloud;
 import it.uniroma2.cloud.util.PropertiesMap;
 import it.uniroma2.cloud.util.PropertiesMap.CloudProviderProperty;
 
+import java.util.Properties;
+
 import org.jclouds.ContextBuilder;
+import org.jclouds.aws.domain.Region;
+import org.jclouds.aws.ec2.reference.AWSEC2Constants;
 import org.jclouds.cloudstack.CloudStackAsyncClient;
 import org.jclouds.cloudstack.CloudStackClient;
 import org.jclouds.compute.ComputeService;
@@ -59,7 +63,7 @@ public class ProviderFactory {
 				.newBuilder(provider.toString())
 				.credentials(p.get(CloudProviderProperty.AWS_ACCESS_KEY_ID),
 						p.get(CloudProviderProperty.AWS_SECRET_KEY))
-				.modules(getModules()).build();
+				.modules(getModules()).overrides(configureAWSProperties()).build();
 
 		return context;
 	}
@@ -81,7 +85,7 @@ public class ProviderFactory {
 		String accessKey = p.get(CloudProviderProperty.AWS_ACCESS_KEY_ID);
 		String secretKey = p.get(CloudProviderProperty.AWS_SECRET_KEY);
 		ContextBuilder builder = ContextBuilder.newBuilder(provider.toString())
-				.credentials(accessKey, secretKey).modules(getModules());
+				.credentials(accessKey, secretKey).modules(getModules()).overrides(configureAWSProperties());
 		ComputeService computeService = builder.build(
 				ComputeServiceContext.class).getComputeService();
 		return computeService;
@@ -92,6 +96,13 @@ public class ProviderFactory {
 				new SLF4JLoggingModule(), new EnterpriseConfigurationModule());
 	}
 
+	private static Properties configureAWSProperties(){
+		Properties overrides = new Properties();
+		overrides.setProperty(AWSEC2Constants.PROPERTY_EC2_CC_REGIONS,
+				Region.US_EAST_1);
+		return overrides;
+	}
+	
 	/**
 	 * @param args
 	 */
