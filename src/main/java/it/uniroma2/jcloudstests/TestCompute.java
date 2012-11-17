@@ -38,10 +38,9 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 
-public class TestCloudStack {
+public class TestCompute {
 
-	private static final PropertiesMap p = PropertiesMap.getInstance();
-	private static final PROVIDER provider = PROVIDER.AWS_EC2;
+	private static final PROVIDER provider = PROVIDER.AWS_EC2; // may be PROVIDER.CLOUDSTACK
 
 	/**
 	 * @param args
