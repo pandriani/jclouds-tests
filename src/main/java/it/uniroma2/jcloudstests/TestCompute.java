@@ -96,7 +96,7 @@ public class TestCompute {
 			//
 			// computeService.runScriptOnNode(node.getId(), st);
 
-			String javaApp = "apache2";
+			String javaApp = "java";
 
 			List<String> recipes = new ArrayList<String>();
 			recipes.add(javaApp);
@@ -118,7 +118,7 @@ public class TestCompute {
 			// Configure Chef Solo to bootstrap the selected recipes
 			bootstrapBuilder.add(ChefSolo.builder() //
 					.cookbookPath("/var/chef/cookbooks") //
-					.runlist(RunList.builder().recipes(recipes).build()) //
+					.runlist(RunList.builder().recipes(recipes).build())
 					.build());
 
 			// Build the statement that will perform all the operations
