@@ -3,11 +3,15 @@ package it.uniroma2.cloud;
 import it.uniroma2.cloud.util.PropertiesMap;
 import it.uniroma2.cloud.util.PropertiesMap.CloudProviderProperty;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.Properties;
 
 import org.jclouds.ContextBuilder;
 import org.jclouds.aws.domain.Region;
 import org.jclouds.aws.ec2.reference.AWSEC2Constants;
+import org.jclouds.chef.ChefContext;
+import org.jclouds.chef.config.ChefProperties;
 import org.jclouds.cloudstack.CloudStackAsyncClient;
 import org.jclouds.cloudstack.CloudStackClient;
 import org.jclouds.compute.ComputeService;
@@ -19,7 +23,9 @@ import org.jclouds.logging.slf4j.config.SLF4JLoggingModule;
 import org.jclouds.rest.RestContext;
 import org.jclouds.sshj.config.SshjSshClientModule;
 
+import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.io.Files;
 import com.google.inject.Module;
 
 public class ProviderFactory {
@@ -63,7 +69,8 @@ public class ProviderFactory {
 				.newBuilder(provider.toString())
 				.credentials(p.get(CloudProviderProperty.AWS_ACCESS_KEY_ID),
 						p.get(CloudProviderProperty.AWS_SECRET_KEY))
-				.modules(getModules()).overrides(configureAWSProperties()).build();
+				.modules(getModules()).overrides(configureAWSProperties())
+				.build();
 
 		return context;
 	}
@@ -81,11 +88,34 @@ public class ProviderFactory {
 		return computeService;
 	}
 
+	public static ChefContext createChefContext() throws IOException {
+		String chefClientName = p.get(CloudProviderProperty.CHEF_CLIENT_NAME);
+		String pemFile = System.getProperty("user.home") + "/.chef/"
+				+ chefClientName + ".pem";
+		String clientCredential = Files.toString(new File(pemFile),
+				Charsets.UTF_8);
+		
+		Properties chefConfig = new Properties();
+		chefConfig.put(ChefProperties.CHEF_VALIDATOR_NAME, chefClientName);
+		chefConfig.put(ChefProperties.CHEF_VALIDATOR_CREDENTIAL,
+				clientCredential);
+
+		ChefContext chefContext = ContextBuilder
+				.newBuilder("chef")
+				.endpoint(CloudProviderProperty.CHEF_SERVER_URL.toString())
+				.credentials(chefClientName,
+						clientCredential)
+				.modules(ImmutableSet.<Module> of(new SLF4JLoggingModule()))
+				.overrides(chefConfig).build();
+		return chefContext;
+	}
+
 	private static ComputeService createComputeServiceAWS(PROVIDER provider) {
 		String accessKey = p.get(CloudProviderProperty.AWS_ACCESS_KEY_ID);
 		String secretKey = p.get(CloudProviderProperty.AWS_SECRET_KEY);
 		ContextBuilder builder = ContextBuilder.newBuilder(provider.toString())
-				.credentials(accessKey, secretKey).modules(getModules()).overrides(configureAWSProperties());
+				.credentials(accessKey, secretKey).modules(getModules())
+				.overrides(configureAWSProperties());
 		ComputeService computeService = builder.build(
 				ComputeServiceContext.class).getComputeService();
 		return computeService;
@@ -96,13 +126,13 @@ public class ProviderFactory {
 				new SLF4JLoggingModule(), new EnterpriseConfigurationModule());
 	}
 
-	private static Properties configureAWSProperties(){
+	private static Properties configureAWSProperties() {
 		Properties overrides = new Properties();
 		overrides.setProperty(AWSEC2Constants.PROPERTY_EC2_CC_REGIONS,
 				Region.US_EAST_1);
 		return overrides;
 	}
-	
+
 	/**
 	 * @param args
 	 */

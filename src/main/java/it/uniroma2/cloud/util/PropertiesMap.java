@@ -16,8 +16,8 @@ public class PropertiesMap {
 		// Cloudstack
 		CLOUDSTACK_URL, CLOUDSTACK_API_KEY, CLOUDSTACK_SECRET_KEY,CLOUDSTACK_DEFAULT_IMAGE,CLOUDSTACK_IMAGE_USER, CLOUDSTACK_IMAGE_PASSWORD,
 
-		// Proxy setting //TODO aggiungere le altre
-		HTTP_PROXYHOST
+		//Chef Server
+		CHEF_SERVER_URL, CHEF_CLIENT_NAME,
 	}
 
 	private static PropertiesMap instance = null;

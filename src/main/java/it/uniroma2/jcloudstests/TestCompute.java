@@ -65,7 +65,7 @@ public class TestCompute {
 
 		try {
 			Set<? extends NodeMetadata> nodeSet = computeService
-					.createNodesInGroup("worker-node", 1, t);
+					.createNodesInGroup("worker-node", 3, t);
 
 			Iterator<? extends NodeMetadata> itNode = nodeSet.iterator();
 			while (itNode.hasNext()) {
@@ -95,39 +95,6 @@ public class TestCompute {
 			// ChefSolo.builder().cookbooksArchiveLocation("/tmp/mysql-1.3.0.tar.gz").defineRole(role).build();
 			//
 			// computeService.runScriptOnNode(node.getId(), st);
-
-			String javaApp = "java";
-
-			List<String> recipes = new ArrayList<String>();
-			recipes.add(javaApp);
-
-			ImmutableList.Builder<Statement> bootstrapBuilder = ImmutableList
-					.builder();
-			bootstrapBuilder.add(new InstallGit());
-
-			for (String recipe : recipes) {
-				bootstrapBuilder.add(CloneGitRepo
-						.builder()
-						.repository(
-								"git://github.com/opscode-cookbooks/" + recipe
-										+ ".git")
-						.directory("/var/chef/cookbooks/" + recipe) //
-						.build());
-			}
-
-			// Configure Chef Solo to bootstrap the selected recipes
-			bootstrapBuilder.add(ChefSolo.builder() //
-					.cookbookPath("/var/chef/cookbooks") //
-					.runlist(RunList.builder().recipes(recipes).build())
-					.build());
-
-			// Build the statement that will perform all the operations
-			// above
-			StatementList bootstrap = new StatementList(
-					bootstrapBuilder.build());
-
-			// Run the script in the nodes of the group
-			helper.runScriptOnGroup(computeService, "worker-node", bootstrap);
 
 		} catch (Exception e) {
 			e.printStackTrace();

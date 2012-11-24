@@ -133,8 +133,8 @@ public class TestAWSCompute {
 
 	private static void setProxy() {
 		//TODO aggiungere le altre properties
-		System.setProperty("https.proxyHost",
-				p.get(CloudProviderProperty.HTTP_PROXYHOST));
+//		System.setProperty("https.proxyHost",
+//				p.get(CloudProviderProperty.HTTP_PROXYHOST));
 
 	}
 
