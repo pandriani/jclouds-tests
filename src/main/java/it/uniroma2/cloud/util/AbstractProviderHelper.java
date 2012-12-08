@@ -17,6 +17,7 @@ import org.jclouds.compute.RunScriptOnNodesException;
 import org.jclouds.compute.domain.ExecResponse;
 import org.jclouds.compute.domain.NodeMetadata;
 import org.jclouds.compute.domain.Template;
+import org.jclouds.compute.predicates.NodePredicates;
 import org.jclouds.domain.LoginCredentials;
 import org.jclouds.scriptbuilder.domain.Statement;
 
@@ -28,7 +29,6 @@ public abstract class AbstractProviderHelper implements ProviderHelper {
 			ComputeService computeService, String groupName) {
 		return filter(computeService.listNodesDetailsMatching(all()),
 				and(inGroup(groupName), not(TERMINATED)));
-
 	}
 
 	public void runScriptOnGroup(ComputeService compute, String groupName,
@@ -61,5 +61,10 @@ public abstract class AbstractProviderHelper implements ProviderHelper {
 	}
 
 	public abstract Template getTemplate(ComputeService computeService);
+	
+	protected int[] getPortsToBeOpened() {
+		return new int[] { 80, 443, 22, 8080, 8443 };
+	}
+
 
 }

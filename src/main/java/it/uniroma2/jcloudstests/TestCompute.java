@@ -65,7 +65,7 @@ public class TestCompute {
 
 		try {
 			Set<? extends NodeMetadata> nodeSet = computeService
-					.createNodesInGroup("worker-node", 3, t);
+					.createNodesInGroup("worker-node", 1, t);
 
 			Iterator<? extends NodeMetadata> itNode = nodeSet.iterator();
 			while (itNode.hasNext()) {

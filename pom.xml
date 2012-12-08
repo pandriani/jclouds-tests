@@ -13,6 +13,13 @@
 				<enabled>true</enabled>
 			</snapshots>
 		</repository>
+		<repository>
+			<id>tesiRepo</id>
+			<url>http://160.80.85.36/m2/</url>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+		</repository>
 	</repositories>
 	<dependencies>
 		<dependency>
@@ -80,6 +87,11 @@
 			<groupId>org.javasimon</groupId>
 			<artifactId>javasimon-spring</artifactId>
 			<version>3.3.0</version>
+		</dependency>
+		<dependency>
+			<groupId>com.faban</groupId>
+			<artifactId>fabancommon</artifactId>
+			<version>1.0.2</version>
 		</dependency>
 	</dependencies>
 </project>

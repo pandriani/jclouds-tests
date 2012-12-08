@@ -102,7 +102,7 @@ public class ProviderFactory {
 
 		ChefContext chefContext = ContextBuilder
 				.newBuilder("chef")
-				.endpoint(CloudProviderProperty.CHEF_SERVER_URL.toString())
+				.endpoint((p.get(CloudProviderProperty.CHEF_SERVER_URL).toString()))
 				.credentials(chefClientName,
 						clientCredential)
 				.modules(ImmutableSet.<Module> of(new SLF4JLoggingModule()))
@@ -128,8 +128,8 @@ public class ProviderFactory {
 
 	private static Properties configureAWSProperties() {
 		Properties overrides = new Properties();
-		overrides.setProperty(AWSEC2Constants.PROPERTY_EC2_CC_REGIONS,
-				Region.US_EAST_1);
+//		overrides.setProperty(AWSEC2Constants.PROPERTY_EC2_CC_REGIONS,
+//				Region.US_EAST_1);
 		return overrides;
 	}
 
@@ -137,10 +137,12 @@ public class ProviderFactory {
 	 * @param args
 	 */
 	public static void main(String[] args) {
+		@SuppressWarnings("unchecked")
 		RestContext<CloudStackClient, CloudStackAsyncClient> cloudStackContext = (RestContext<CloudStackClient, CloudStackAsyncClient>) ProviderFactory
 				.createRestContext(PROVIDER.CLOUDSTACK);
 		System.out.println(cloudStackContext.getDescription());
 
+		@SuppressWarnings("unchecked")
 		RestContext<EC2Client, EC2AsyncClient> awsContext = (RestContext<EC2Client, EC2AsyncClient>) ProviderFactory
 				.createRestContext(PROVIDER.AWS_EC2);
 		System.out.println(awsContext.getDescription());

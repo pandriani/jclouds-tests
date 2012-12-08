@@ -45,7 +45,7 @@ public class TestChef {
 			// Build the runlist for the deployed nodes
 			System.out
 					.println("Configuring node runlist in the Chef server...");
-			List<String> runlist = new RunListBuilder().addRecipe("java")
+			List<String> runlist = new RunListBuilder().addRecipe("java").addRecipe("tomcat")
 					.build();
 			chef.updateRunListForGroup(runlist, group);
 			Statement chefBootstrap = chef.createBootstrapScriptForGroup(group);

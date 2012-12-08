@@ -22,6 +22,7 @@ public class CloudStackProviderHelper extends AbstractProviderHelper implements 
 		return instance;
 	}
 	
+	@Override
 	public LoginCredentials getLoginCredentials() {
 		return LoginCredentials
 				.builder()
@@ -38,7 +39,7 @@ public class CloudStackProviderHelper extends AbstractProviderHelper implements 
 
 		Template t = templateBuilder
 				.imageId(p.get(CloudProviderProperty.CLOUDSTACK_DEFAULT_IMAGE))
-				.smallest().options(opts).build();
+				.smallest().options(opts.inboundPorts(getPortsToBeOpened())).build();
 		return t;
 	}
 	
