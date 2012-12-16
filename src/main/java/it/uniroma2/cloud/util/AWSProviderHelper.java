@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.IOException;
 
 import org.jclouds.aws.domain.Region;
+import org.jclouds.chef.ChefContext;
 import org.jclouds.compute.ComputeService;
 import org.jclouds.compute.domain.Template;
 import org.jclouds.compute.domain.TemplateBuilder;
@@ -97,5 +98,11 @@ public class AWSProviderHelper extends AbstractProviderHelper implements
 				.user(p.get(CloudProviderProperty.AWS_AMI_USER))
 				.privateKey(privateKey).authenticateSudo(true).build();
 
+	}
+
+	@Override
+	protected String getChefURL() {
+		PropertiesMap p = PropertiesMap.getInstance();
+		return 	p.get(CloudProviderProperty.CHEF_SERVER_AWS);
 	}
 }

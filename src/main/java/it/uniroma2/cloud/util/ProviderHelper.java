@@ -2,6 +2,7 @@ package it.uniroma2.cloud.util;
 
 import java.io.IOException;
 
+import org.jclouds.chef.ChefContext;
 import org.jclouds.compute.ComputeService;
 import org.jclouds.compute.RunScriptOnNodesException;
 import org.jclouds.compute.domain.NodeMetadata;
@@ -20,4 +21,6 @@ public interface ProviderHelper {
 			Statement command) throws RunScriptOnNodesException;
 
 	Template getTemplate(ComputeService computeService);
+	
+	ChefContext buildChefContext() throws IOException;
 }

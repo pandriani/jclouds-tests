@@ -40,7 +40,7 @@ import com.google.common.collect.Lists;
 
 public class TestCompute {
 
-	private static final PROVIDER provider = PROVIDER.AWS_EC2; // may be PROVIDER.CLOUDSTACK
+	private static final PROVIDER provider = PROVIDER.CLOUDSTACK; // may be PROVIDER.CLOUDSTACK
 
 	/**
 	 * @param args

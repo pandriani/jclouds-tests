@@ -9,9 +9,17 @@ import static org.jclouds.compute.predicates.NodePredicates.TERMINATED;
 import static org.jclouds.compute.predicates.NodePredicates.all;
 import static org.jclouds.compute.predicates.NodePredicates.inGroup;
 
+import it.uniroma2.cloud.util.PropertiesMap.CloudProviderProperty;
+
+import java.io.File;
+import java.io.IOException;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Map.Entry;
 
+import org.jclouds.ContextBuilder;
+import org.jclouds.chef.ChefContext;
+import org.jclouds.chef.config.ChefProperties;
 import org.jclouds.compute.ComputeService;
 import org.jclouds.compute.RunScriptOnNodesException;
 import org.jclouds.compute.domain.ExecResponse;
@@ -19,7 +27,13 @@ import org.jclouds.compute.domain.NodeMetadata;
 import org.jclouds.compute.domain.Template;
 import org.jclouds.compute.predicates.NodePredicates;
 import org.jclouds.domain.LoginCredentials;
+import org.jclouds.logging.slf4j.config.SLF4JLoggingModule;
 import org.jclouds.scriptbuilder.domain.Statement;
+
+import com.google.common.base.Charsets;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.io.Files;
+import com.google.inject.Module;
 
 public abstract class AbstractProviderHelper implements ProviderHelper {
 
@@ -60,11 +74,37 @@ public abstract class AbstractProviderHelper implements ProviderHelper {
 		}
 	}
 
-	public abstract Template getTemplate(ComputeService computeService);
+	public ChefContext buildChefContext() throws IOException {
+		PropertiesMap p = PropertiesMap.getInstance();
+		
+		String endpoint = getChefURL();
+		
+		String chefClientName = p.get(CloudProviderProperty.CHEF_CLIENT_NAME);
+		String pemFile = System.getProperty("user.home") + "/.chef/"
+				+ chefClientName + ".pem";
+		String clientCredential = Files.toString(new File(pemFile),
+				Charsets.UTF_8);
+
+		Properties chefConfig = new Properties();
+		chefConfig.put(ChefProperties.CHEF_VALIDATOR_NAME, chefClientName);
+		chefConfig.put(ChefProperties.CHEF_VALIDATOR_CREDENTIAL,
+				clientCredential);
+
+		ChefContext chefContext = ContextBuilder
+				.newBuilder("chef")
+				.endpoint(endpoint)
+				.credentials(chefClientName, clientCredential)
+				.modules(ImmutableSet.<Module> of(new SLF4JLoggingModule()))
+				.overrides(chefConfig).build();
+		return chefContext;
+	}
+
+	protected abstract String getChefURL();
 	
+	public abstract Template getTemplate(ComputeService computeService);
+
 	protected int[] getPortsToBeOpened() {
 		return new int[] { 80, 443, 22, 8080, 8443 };
 	}
-
 
 }

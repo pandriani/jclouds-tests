@@ -88,28 +88,6 @@ public class ProviderFactory {
 		return computeService;
 	}
 
-	public static ChefContext createChefContext() throws IOException {
-		String chefClientName = p.get(CloudProviderProperty.CHEF_CLIENT_NAME);
-		String pemFile = System.getProperty("user.home") + "/.chef/"
-				+ chefClientName + ".pem";
-		String clientCredential = Files.toString(new File(pemFile),
-				Charsets.UTF_8);
-		
-		Properties chefConfig = new Properties();
-		chefConfig.put(ChefProperties.CHEF_VALIDATOR_NAME, chefClientName);
-		chefConfig.put(ChefProperties.CHEF_VALIDATOR_CREDENTIAL,
-				clientCredential);
-
-		ChefContext chefContext = ContextBuilder
-				.newBuilder("chef")
-				.endpoint((p.get(CloudProviderProperty.CHEF_SERVER_URL).toString()))
-				.credentials(chefClientName,
-						clientCredential)
-				.modules(ImmutableSet.<Module> of(new SLF4JLoggingModule()))
-				.overrides(chefConfig).build();
-		return chefContext;
-	}
-
 	private static ComputeService createComputeServiceAWS(PROVIDER provider) {
 		String accessKey = p.get(CloudProviderProperty.AWS_ACCESS_KEY_ID);
 		String secretKey = p.get(CloudProviderProperty.AWS_SECRET_KEY);

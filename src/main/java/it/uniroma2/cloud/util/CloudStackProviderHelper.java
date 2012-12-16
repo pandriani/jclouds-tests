@@ -48,5 +48,11 @@ public class CloudStackProviderHelper extends AbstractProviderHelper implements 
 				.overrideLoginCredentials(getLoginCredentials());
 	}
 
+	@Override
+	protected String getChefURL() {
+		PropertiesMap p = PropertiesMap.getInstance();
+		return 	p.get(CloudProviderProperty.CHEF_SERVER_CLOUDSTACK);
+	}
+
 
 }

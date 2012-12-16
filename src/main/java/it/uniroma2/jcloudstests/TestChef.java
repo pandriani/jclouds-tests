@@ -25,20 +25,20 @@ import com.google.inject.Module;
 
 public class TestChef {
 
-	private static final PROVIDER provider = PROVIDER.AWS_EC2; 
+	private static final PROVIDER provider = PROVIDER.CLOUDSTACK; 
 	
 	public static void main(final String[] args) throws Exception {
 		// Group for the virtual machines
 		String group = "worker-node";
 
-		ChefContext chefContext = ProviderFactory.createChefContext();
 		// Connect to the cloud provider
 
 		ComputeService computeService = ProviderFactory
 				.createComputeService(provider);
 		ProviderHelper helper = ProviderHelperFactory
 				.getProviderHelper(provider);
-
+		
+		ChefContext chefContext = helper.buildChefContext();
 		ChefService chef = chefContext.getChefService();
 
 		try {
