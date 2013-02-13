@@ -9,6 +9,7 @@ import it.uniroma2.cloud.util.ProviderHelperFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -24,6 +25,7 @@ import org.jclouds.domain.LoginCredentials;
 import org.jclouds.io.Payloads;
 import org.jclouds.scriptbuilder.domain.Statement;
 import org.jclouds.scriptbuilder.domain.StatementList;
+import org.jclouds.scriptbuilder.domain.Statements;
 import org.jclouds.scriptbuilder.domain.chef.Role;
 import org.jclouds.scriptbuilder.domain.chef.RunList;
 import org.jclouds.scriptbuilder.statements.chef.ChefSolo;
@@ -40,7 +42,8 @@ import com.google.common.collect.Lists;
 
 public class TestCompute {
 
-	private static final PROVIDER provider = PROVIDER.CLOUDSTACK; // may be PROVIDER.CLOUDSTACK
+	private static final PROVIDER provider = PROVIDER.AWS_EC2; // may be
+																// PROVIDER.CLOUDSTACK
 
 	/**
 	 * @param args
@@ -60,7 +63,7 @@ public class TestCompute {
 			NodeMetadata node = nodeIt.next();
 			System.out.println(node);
 		}
-		
+
 		Template t = helper.getTemplate(computeService);
 
 		try {
@@ -72,29 +75,12 @@ public class TestCompute {
 				NodeMetadata node = (NodeMetadata) itNode.next();
 				System.out.println(node);
 			}
-			// //ssh chef cookbook
-			// SshClient ssh =
-			// computeService.getContext().getUtils().sshForNode().apply(node);
-			// ssh.connect();
-			// ssh.exec("date");
-			// ssh.put("/tmp/mysql-1.3.0.tar.gz",
-			// Payloads.newFilePayload(new
-			// File("/Users/pandriani/mysql-1.3.0.tar.gz")));
-			// ssh.disconnect();
-			// //ssh chef cookbook
-			//
-			// computeService.runScriptOnNode(node.getId(), new
-			// InstallChefGems(),
-			// TemplateOptions.Builder.overrideLoginCredentials(LoginCredentials.builder().
-			// user(p.get(CloudProviderProperty.CLOUDSTACK_IMAGE_USER)).password(p.get(CloudProviderProperty.CLOUDSTACK_IMAGE_PASSWORD)).authenticateSudo(true).build()));
-			//
-			// RunList runlist = RunList.builder().recipe("mysql").build();
-			// Role role =
-			// Role.builder().name("storage").runlist(runlist).build();
-			// ChefSolo st =
-			// ChefSolo.builder().cookbooksArchiveLocation("/tmp/mysql-1.3.0.tar.gz").defineRole(role).build();
-			//
-			// computeService.runScriptOnNode(node.getId(), st);
+
+			helper.runScriptOnGroup(computeService, "worker-node", Statements
+					.newStatementList(Statements.exec("date"),
+							Statements.exec("apt-get -y install tomcat7"), 
+							Statements.exec("wget https://s3.amazonaws.com/TesiAndrianiFiorentino/imagetranscoder.war"),
+							Statements.exec("mv imagetranscoder.war /var/lib/tomcat7/webapps")));
 
 		} catch (Exception e) {
 			e.printStackTrace();

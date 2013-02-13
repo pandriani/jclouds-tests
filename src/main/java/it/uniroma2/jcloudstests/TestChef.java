@@ -25,8 +25,8 @@ import com.google.inject.Module;
 
 public class TestChef {
 
-	private static final PROVIDER provider = PROVIDER.CLOUDSTACK; 
-	
+	private static final PROVIDER provider = PROVIDER.AWS_EC2;
+
 	public static void main(final String[] args) throws Exception {
 		// Group for the virtual machines
 		String group = "worker-node";
@@ -37,7 +37,7 @@ public class TestChef {
 				.createComputeService(provider);
 		ProviderHelper helper = ProviderHelperFactory
 				.getProviderHelper(provider);
-		
+
 		ChefContext chefContext = helper.buildChefContext();
 		ChefService chef = chefContext.getChefService();
 
@@ -45,12 +45,16 @@ public class TestChef {
 			// Build the runlist for the deployed nodes
 			System.out
 					.println("Configuring node runlist in the Chef server...");
-			List<String> runlist = new RunListBuilder().addRecipe("java").addRecipe("tomcat")
+			List<String> runlist = new RunListBuilder()
+					.addRecipe("java")
+					.addRecipe("tomcat")
+					.addRecipe("myapp")
 					.build();
 			chef.updateRunListForGroup(runlist, group);
 			Statement chefBootstrap = chef.createBootstrapScriptForGroup(group);
 
-			helper.runScriptOnGroup(computeService, "worker-node", chefBootstrap);			
+			helper.runScriptOnGroup(computeService, "worker-node",
+					chefBootstrap);
 
 		} catch (Exception ex) {
 			ex.printStackTrace();
@@ -58,5 +62,4 @@ public class TestChef {
 			chefContext.close();
 		}
 	}
-
 }

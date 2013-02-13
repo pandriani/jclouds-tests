@@ -118,7 +118,7 @@ public class ProviderFactory {
 		@SuppressWarnings("unchecked")
 		RestContext<CloudStackClient, CloudStackAsyncClient> cloudStackContext = (RestContext<CloudStackClient, CloudStackAsyncClient>) ProviderFactory
 				.createRestContext(PROVIDER.CLOUDSTACK);
-		System.out.println(cloudStackContext.getDescription());
+		System.out.println(cloudStackContext.getDescription() + " " + cloudStackContext.getApiVersion());
 
 		@SuppressWarnings("unchecked")
 		RestContext<EC2Client, EC2AsyncClient> awsContext = (RestContext<EC2Client, EC2AsyncClient>) ProviderFactory

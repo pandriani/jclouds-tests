@@ -6,8 +6,11 @@ import static com.google.common.collect.Iterables.concat;
 import static com.google.common.collect.Iterables.filter;
 import static org.jclouds.compute.options.TemplateOptions.Builder.overrideLoginCredentials;
 import static org.jclouds.compute.predicates.NodePredicates.TERMINATED;
+import static org.jclouds.compute.predicates.NodePredicates.RUNNING;
 import static org.jclouds.compute.predicates.NodePredicates.all;
 import static org.jclouds.compute.predicates.NodePredicates.inGroup;
+import static org.jclouds.compute.predicates.NodePredicates.runningInGroup;
+
 
 import it.uniroma2.cloud.util.PropertiesMap.CloudProviderProperty;
 
@@ -25,7 +28,6 @@ import org.jclouds.compute.RunScriptOnNodesException;
 import org.jclouds.compute.domain.ExecResponse;
 import org.jclouds.compute.domain.NodeMetadata;
 import org.jclouds.compute.domain.Template;
-import org.jclouds.compute.predicates.NodePredicates;
 import org.jclouds.domain.LoginCredentials;
 import org.jclouds.logging.slf4j.config.SLF4JLoggingModule;
 import org.jclouds.scriptbuilder.domain.Statement;
@@ -42,7 +44,7 @@ public abstract class AbstractProviderHelper implements ProviderHelper {
 	public Iterable<? extends NodeMetadata> listRunningNodesInGroup(
 			ComputeService computeService, String groupName) {
 		return filter(computeService.listNodesDetailsMatching(all()),
-				and(inGroup(groupName), not(TERMINATED)));
+				runningInGroup(groupName));
 	}
 
 	public void runScriptOnGroup(ComputeService compute, String groupName,
@@ -52,7 +54,7 @@ public abstract class AbstractProviderHelper implements ProviderHelper {
 		// and wrap in an init script vs directly invoke
 		Map<? extends NodeMetadata, ExecResponse> execResponses = compute
 				.runScriptOnNodesMatching(//
-						inGroup(groupName), // predicate used to select nodes
+						runningInGroup(groupName), // predicate used to select nodes
 						command, // what you actually intend to run
 						overrideLoginCredentials(getLoginCredentials()) // use
 																		// the
