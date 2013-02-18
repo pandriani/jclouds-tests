@@ -1,24 +1,17 @@
 package it.uniroma2.cloud.util;
 
-import static com.google.common.base.Predicates.and;
-import static com.google.common.base.Predicates.not;
 import static com.google.common.collect.Iterables.concat;
 import static com.google.common.collect.Iterables.filter;
 import static org.jclouds.compute.options.TemplateOptions.Builder.overrideLoginCredentials;
-import static org.jclouds.compute.predicates.NodePredicates.TERMINATED;
-import static org.jclouds.compute.predicates.NodePredicates.RUNNING;
 import static org.jclouds.compute.predicates.NodePredicates.all;
-import static org.jclouds.compute.predicates.NodePredicates.inGroup;
 import static org.jclouds.compute.predicates.NodePredicates.runningInGroup;
-
-
 import it.uniroma2.cloud.util.PropertiesMap.CloudProviderProperty;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Map.Entry;
+import java.util.Properties;
 
 import org.jclouds.ContextBuilder;
 import org.jclouds.chef.ChefContext;

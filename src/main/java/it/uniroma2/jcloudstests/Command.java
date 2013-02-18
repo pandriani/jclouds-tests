@@ -17,6 +17,7 @@ import java.util.Set;
 
 import org.jclouds.compute.ComputeService;
 import org.jclouds.compute.RunNodesException;
+import org.jclouds.compute.RunScriptOnNodesException;
 import org.jclouds.compute.domain.NodeMetadata;
 import org.jclouds.compute.domain.Template;
 import org.jclouds.compute.domain.TemplateBuilder;
@@ -40,47 +41,74 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 
-public class TestCompute {
+public class Command {
 
 	private static final PROVIDER provider = PROVIDER.AWS_EC2; // may be
 																// PROVIDER.CLOUDSTACK
+	private static final String WORKERNODE = "worker-node";
+	private ComputeService computeService;
+	private ProviderHelper helper;
 
-	/**
-	 * @param args
-	 * @throws IOException
-	 */
-	public static void main(String[] args) throws IOException {
+	public Command(ComputeService computeService, ProviderHelper helper) {
+		super();
+		this.computeService = computeService;
+		this.helper = helper;
+	}
 
-		ComputeService computeService = ProviderFactory
-				.createComputeService(provider);
-		ProviderHelper helper = ProviderHelperFactory
-				.getProviderHelper(provider);
-
+	public void printNodeGroup(String group) {
 		Iterable<? extends NodeMetadata> nodes = helper
-				.listRunningNodesInGroup(computeService, "worker-node");
+				.listRunningNodesInGroup(computeService, group);
 		Iterator<? extends NodeMetadata> nodeIt = nodes.iterator();
 		while (nodeIt.hasNext()) {
 			NodeMetadata node = nodeIt.next();
 			System.out.println(node);
+			System.out.println(node.getPublicAddresses().iterator().next());
 		}
+	}
 
+	public void createInstances(String group, int howMany)
+			throws RunNodesException {
 		Template t = helper.getTemplate(computeService);
+		Set<? extends NodeMetadata> nodeSet = computeService
+				.createNodesInGroup(group, howMany, t);
 
+		Iterator<? extends NodeMetadata> itNode = nodeSet.iterator();
+		while (itNode.hasNext()) {
+			NodeMetadata node = (NodeMetadata) itNode.next();
+			System.out.println(node);
+			System.out.println(node.getPublicAddresses().iterator().next());
+		}
+	}
+
+
+	public void installWorkerNodes() throws RunScriptOnNodesException {
+		helper.runScriptOnGroup(
+				computeService,
+				WORKERNODE,
+				Statements.newStatementList(
+						Statements.exec("export CATALINA_OPTS=\"-Xms256m -Xmx512m\""),
+						Statements.exec("apt-get -y update"),
+						Statements.exec("apt-get -y install tomcat7"),
+						Statements
+								.exec("wget https://s3.amazonaws.com/TesiAndrianiFiorentino/imagetranscoder.war"),
+						Statements
+								.exec("mv imagetranscoder.war /var/lib/tomcat7/webapps")));
+	}
+	
+	/**
+	 * @param args
+	 * @throws IOException
+	 */
+	public static void main(String[] args) {
+		ComputeService computeService = ProviderFactory
+				.createComputeService(provider);
+		ProviderHelper helper = ProviderHelperFactory
+				.getProviderHelper(provider);
 		try {
-			Set<? extends NodeMetadata> nodeSet = computeService
-					.createNodesInGroup("worker-node", 1, t);
-
-			Iterator<? extends NodeMetadata> itNode = nodeSet.iterator();
-			while (itNode.hasNext()) {
-				NodeMetadata node = (NodeMetadata) itNode.next();
-				System.out.println(node);
-			}
-
-			helper.runScriptOnGroup(computeService, "worker-node", Statements
-					.newStatementList(Statements.exec("date"),
-							Statements.exec("apt-get -y install tomcat7"), 
-							Statements.exec("wget https://s3.amazonaws.com/TesiAndrianiFiorentino/imagetranscoder.war"),
-							Statements.exec("mv imagetranscoder.war /var/lib/tomcat7/webapps")));
+			Command cmd = new Command(computeService, helper);
+			//cmd.printNodeGroup(WORKERNODE);
+			cmd.createInstances(WORKERNODE, 2);
+			cmd.installWorkerNodes();
 
 		} catch (Exception e) {
 			e.printStackTrace();
