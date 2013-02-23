@@ -53,8 +53,8 @@ public class TestChef {
 			chef.updateRunListForGroup(runlist, group);
 			Statement chefBootstrap = chef.createBootstrapScriptForGroup(group);
 
-			helper.runScriptOnGroup(computeService, "worker-node",
-					chefBootstrap);
+//			helper.runScriptOnGroup(computeService, "worker-node",
+//					chefBootstrap);
 
 		} catch (Exception ex) {
 			ex.printStackTrace();

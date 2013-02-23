@@ -24,6 +24,7 @@ import org.jclouds.compute.domain.TemplateBuilder;
 import org.jclouds.compute.options.TemplateOptions;
 import org.jclouds.domain.LoginCredentials;
 import org.jclouds.io.Payloads;
+import org.jclouds.scriptbuilder.domain.OsFamily;
 import org.jclouds.scriptbuilder.domain.Statement;
 import org.jclouds.scriptbuilder.domain.StatementList;
 import org.jclouds.scriptbuilder.domain.Statements;
@@ -46,6 +47,7 @@ public class Command {
 	private static final PROVIDER provider = PROVIDER.AWS_EC2; // may be
 																// PROVIDER.CLOUDSTACK
 	private static final String WORKERNODE = "worker-node";
+	private static final String MONITORING = "monitoring";
 	private ComputeService computeService;
 	private ProviderHelper helper;
 
@@ -80,21 +82,34 @@ public class Command {
 		}
 	}
 
-
-	public void installWorkerNodes() throws RunScriptOnNodesException {
+	public void installWorkerNodes(PROVIDER provider)
+			throws RunScriptOnNodesException {
 		helper.runScriptOnGroup(
 				computeService,
 				WORKERNODE,
-				Statements.newStatementList(
-						Statements.exec("export CATALINA_OPTS=\"-Xms256m -Xmx512m\""),
-						Statements.exec("apt-get -y update"),
-						Statements.exec("apt-get -y install tomcat7"),
-						Statements
-								.exec("wget https://s3.amazonaws.com/TesiAndrianiFiorentino/imagetranscoder.war"),
-						Statements
-								.exec("mv imagetranscoder.war /var/lib/tomcat7/webapps")));
+				Statements
+						.newStatementList(
+								Statements
+										.exec("echo 'export CATALINA_OPTS=\"-Xms256m -Xmx512m\"' >> $HOME/.bashrc"),
+								Statements.exec("echo 'export CLOUD_PROVIDER="
+										+ provider.name()
+										+ "' >> $HOME/.bashrc"),
+								Statements.exec("apt-get -y update"),
+								Statements.exec("apt-get -y install unzip"),
+								Statements
+										.exec("wget https://s3.amazonaws.com/TesiAndrianiFiorentino/hyperic-sigar-1.6.4.zip"),
+								Statements
+										.exec("unzip hyperic-sigar-1.6.4.zip"),
+								Statements
+										.exec("mv hyperic-sigar-1.6.4/sigar-bin/lib/* /lib"),
+								Statements.exec("apt-get -y install tomcat7"),
+								Statements
+										.exec("wget https://s3.amazonaws.com/TesiAndrianiFiorentino/imagetranscoder.war"),
+								Statements
+										.exec("mv imagetranscoder.war /var/lib/tomcat7/webapps"))
+						.render(OsFamily.UNIX));
 	}
-	
+
 	/**
 	 * @param args
 	 * @throws IOException
@@ -106,9 +121,9 @@ public class Command {
 				.getProviderHelper(provider);
 		try {
 			Command cmd = new Command(computeService, helper);
-			//cmd.printNodeGroup(WORKERNODE);
-			cmd.createInstances(WORKERNODE, 2);
-			cmd.installWorkerNodes();
+			// cmd.printNodeGroup(WORKERNODE);
+			cmd.createInstances(WORKERNODE, 1);
+			cmd.installWorkerNodes(provider);
 
 		} catch (Exception e) {
 			e.printStackTrace();
