@@ -2,17 +2,11 @@ package it.uniroma2.jcloudstests;
 
 import it.uniroma2.cloud.PROVIDER;
 import it.uniroma2.cloud.ProviderFactory;
-import it.uniroma2.cloud.util.PropertiesMap;
-import it.uniroma2.cloud.util.PropertiesMap.CloudProviderProperty;
 import it.uniroma2.cloud.util.ProviderHelper;
 import it.uniroma2.cloud.util.ProviderHelperFactory;
 
-import java.io.File;
 import java.io.IOException;
-import java.net.URI;
-import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Set;
 
 import org.jclouds.compute.ComputeService;
@@ -20,27 +14,8 @@ import org.jclouds.compute.RunNodesException;
 import org.jclouds.compute.RunScriptOnNodesException;
 import org.jclouds.compute.domain.NodeMetadata;
 import org.jclouds.compute.domain.Template;
-import org.jclouds.compute.domain.TemplateBuilder;
-import org.jclouds.compute.options.TemplateOptions;
-import org.jclouds.domain.LoginCredentials;
-import org.jclouds.io.Payloads;
 import org.jclouds.scriptbuilder.domain.OsFamily;
-import org.jclouds.scriptbuilder.domain.Statement;
-import org.jclouds.scriptbuilder.domain.StatementList;
 import org.jclouds.scriptbuilder.domain.Statements;
-import org.jclouds.scriptbuilder.domain.chef.Role;
-import org.jclouds.scriptbuilder.domain.chef.RunList;
-import org.jclouds.scriptbuilder.statements.chef.ChefSolo;
-import org.jclouds.scriptbuilder.statements.chef.InstallChefGems;
-import org.jclouds.scriptbuilder.statements.git.CloneGitRepo;
-import org.jclouds.scriptbuilder.statements.git.InstallGit;
-
-import org.jclouds.ssh.SshClient;
-
-import com.google.common.collect.Collections2;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
 
 public class Command {
 
@@ -48,6 +23,8 @@ public class Command {
 																// PROVIDER.CLOUDSTACK
 	private static final String WORKERNODE = "worker-node";
 	private static final String MONITORING = "monitoring";
+	private static final String CLIENT = "client";
+
 	private ComputeService computeService;
 	private ProviderHelper helper;
 
@@ -94,6 +71,13 @@ public class Command {
 								Statements.exec("echo 'export CLOUD_PROVIDER="
 										+ provider.name()
 										+ "' >> $HOME/.bashrc"),
+								Statements
+										.exec("echo 'export CATALINA_OPTS=\"-Xms256m -Xmx512m\"' >> $HOME/.profile"),
+								Statements.exec("echo 'export CLOUD_PROVIDER="
+										+ provider.name()
+										+ "' >> $HOME/.profile"),
+								Statements.exec("source $HOME/.profile"),
+								Statements.exec("source $HOME/.bashrc"),
 								Statements.exec("apt-get -y update"),
 								Statements.exec("apt-get -y install unzip"),
 								Statements
@@ -110,6 +94,26 @@ public class Command {
 						.render(OsFamily.UNIX));
 	}
 
+	public void installClientNodes(PROVIDER provider)
+			throws RunScriptOnNodesException {
+		helper.runScriptOnGroup(
+				computeService,
+				CLIENT,
+				Statements
+						.newStatementList(
+								Statements.exec("apt-get -y update"),
+								Statements
+										.exec("apt-get install openjdk-7-jdk"),
+								Statements.exec("apt-get -y install unzip"),
+								Statements
+										.exec("wget https://s3.amazonaws.com/TesiAndrianiFiorentino/imgs.zip"),
+								Statements.exec("unzip imgs.zip"),
+								Statements.exec("mv imgs ~/"),
+								Statements
+										.exec("wget https://s3.amazonaws.com/TesiAndrianiFiorentino/client-0.0.1-SNAPSHOT-jar-with-dependencies.jar"))
+						.render(OsFamily.UNIX));
+	}
+
 	/**
 	 * @param args
 	 * @throws IOException
@@ -122,9 +126,11 @@ public class Command {
 		try {
 			Command cmd = new Command(computeService, helper);
 			// cmd.printNodeGroup(WORKERNODE);
-			cmd.createInstances(WORKERNODE, 1);
+			cmd.createInstances(WORKERNODE, 2);
 			cmd.installWorkerNodes(provider);
 
+			//cmd.installClientNodes(provider);
+			
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
