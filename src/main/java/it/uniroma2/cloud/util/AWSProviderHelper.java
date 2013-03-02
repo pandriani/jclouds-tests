@@ -12,6 +12,7 @@ import org.jclouds.compute.domain.Template;
 import org.jclouds.compute.domain.TemplateBuilder;
 import org.jclouds.domain.LoginCredentials;
 import org.jclouds.ec2.compute.options.EC2TemplateOptions;
+import org.jclouds.ec2.domain.AvailabilityZoneInfo;
 
 import com.google.common.base.Charsets;
 import com.google.common.io.Files;
