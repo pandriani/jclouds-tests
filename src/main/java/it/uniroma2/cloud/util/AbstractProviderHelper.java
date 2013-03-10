@@ -47,7 +47,8 @@ public abstract class AbstractProviderHelper implements ProviderHelper {
 		// and wrap in an init script vs directly invoke
 		Map<? extends NodeMetadata, ExecResponse> execResponses = compute
 				.runScriptOnNodesMatching(//
-						runningInGroup(groupName), // predicate used to select nodes
+						runningInGroup(groupName), // predicate used to select
+													// nodes
 						command, // what you actually intend to run
 						overrideLoginCredentials(getLoginCredentials()) // use
 																		// the
@@ -69,11 +70,33 @@ public abstract class AbstractProviderHelper implements ProviderHelper {
 		}
 	}
 
+	public void runScriptOnInstance(ComputeService compute,
+			String instanceName, String command)
+			throws RunScriptOnNodesException {
+		// when you run commands, you can pass options to decide whether
+		// to run it as root, supply or own credentials vs from cache,
+		// and wrap in an init script vs directly invoke
+		ExecResponse response = compute.runScriptOnNode(//
+				instanceName, // predicate used to select nodes
+				command, // what you actually intend to run
+				overrideLoginCredentials(getLoginCredentials()) // use
+																// the
+																// local
+																// user
+																// &
+						// ssh key
+						.runAsRoot(true)); // don't attempt to run as
+											// root (sudo)
+
+		System.out.printf("<< node %s: %s%n", instanceName);
+		System.out.printf("<<     %s%n", response.getOutput());
+	}
+
 	public ChefContext buildChefContext() throws IOException {
 		PropertiesMap p = PropertiesMap.getInstance();
-		
+
 		String endpoint = getChefURL();
-		
+
 		String chefClientName = p.get(CloudProviderProperty.CHEF_CLIENT_NAME);
 		String pemFile = System.getProperty("user.home") + "/.chef/"
 				+ chefClientName + ".pem";
@@ -85,8 +108,7 @@ public abstract class AbstractProviderHelper implements ProviderHelper {
 		chefConfig.put(ChefProperties.CHEF_VALIDATOR_CREDENTIAL,
 				clientCredential);
 
-		ChefContext chefContext = ContextBuilder
-				.newBuilder("chef")
+		ChefContext chefContext = ContextBuilder.newBuilder("chef")
 				.endpoint(endpoint)
 				.credentials(chefClientName, clientCredential)
 				.modules(ImmutableSet.<Module> of(new SLF4JLoggingModule()))
@@ -95,7 +117,7 @@ public abstract class AbstractProviderHelper implements ProviderHelper {
 	}
 
 	protected abstract String getChefURL();
-	
+
 	public abstract Template getTemplate(ComputeService computeService);
 
 	protected int[] getPortsToBeOpened() {

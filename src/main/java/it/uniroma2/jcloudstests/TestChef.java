@@ -16,6 +16,7 @@ import org.jclouds.chef.config.ChefProperties;
 import org.jclouds.chef.util.RunListBuilder;
 import org.jclouds.compute.ComputeService;
 import org.jclouds.logging.slf4j.config.SLF4JLoggingModule;
+import org.jclouds.scriptbuilder.domain.OsFamily;
 import org.jclouds.scriptbuilder.domain.Statement;
 
 import com.google.common.base.Charsets;
@@ -45,16 +46,14 @@ public class TestChef {
 			// Build the runlist for the deployed nodes
 			System.out
 					.println("Configuring node runlist in the Chef server...");
-			List<String> runlist = new RunListBuilder()
-					.addRecipe("java")
-					.addRecipe("tomcat")
-					.addRecipe("myapp")
-					.build();
-			chef.updateRunListForGroup(runlist, group);
+			List<String> runlist = new RunListBuilder().addRecipe("java")
+					.addRecipe("tomcat").addRecipe("myapp").build();
+			chef.updateBootstrapConfigForGroup(runlist, group);
+			//chef.updateRunListForGroup(runlist, group);
 			Statement chefBootstrap = chef.createBootstrapScriptForGroup(group);
 
-//			helper.runScriptOnGroup(computeService, "worker-node",
-//					chefBootstrap);
+			 helper.runScriptOnGroup(computeService, "worker-node",
+			 chefBootstrap.render(OsFamily.UNIX));
 
 		} catch (Exception ex) {
 			ex.printStackTrace();

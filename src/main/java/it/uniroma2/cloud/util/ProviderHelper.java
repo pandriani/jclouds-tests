@@ -20,6 +20,10 @@ public interface ProviderHelper {
 	void runScriptOnGroup(ComputeService compute, String groupName,
 			String command) throws RunScriptOnNodesException;
 
+	void runScriptOnInstance(ComputeService compute,
+			String instanceName, String command)
+			throws RunScriptOnNodesException;
+
 	Template getTemplate(ComputeService computeService);
 	
 	ChefContext buildChefContext() throws IOException;

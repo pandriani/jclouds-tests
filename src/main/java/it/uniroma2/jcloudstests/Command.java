@@ -55,7 +55,6 @@ public class Command {
 		while (itNode.hasNext()) {
 			NodeMetadata node = (NodeMetadata) itNode.next();
 			System.out.println(node);
-			System.out.println(node.getPublicAddresses().iterator().next());
 		}
 	}
 
@@ -126,8 +125,8 @@ public class Command {
 		try {
 			Command cmd = new Command(computeService, helper);
 			// cmd.printNodeGroup(WORKERNODE);
-			cmd.createInstances(WORKERNODE, 2);
-			cmd.installWorkerNodes(provider);
+			cmd.createInstances(WORKERNODE, 1);
+//			cmd.installWorkerNodes(provider);
 
 			//cmd.installClientNodes(provider);
 			
