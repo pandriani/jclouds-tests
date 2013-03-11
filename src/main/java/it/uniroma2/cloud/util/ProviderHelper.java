@@ -18,7 +18,7 @@ public interface ProviderHelper {
 			ComputeService computeService, String groupName);
 
 	void runScriptOnGroup(ComputeService compute, String groupName,
-			String command) throws RunScriptOnNodesException;
+			Statement command) throws RunScriptOnNodesException;
 
 	void runScriptOnInstance(ComputeService compute,
 			String instanceName, String command)

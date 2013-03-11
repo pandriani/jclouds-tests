@@ -41,7 +41,7 @@ public abstract class AbstractProviderHelper implements ProviderHelper {
 	}
 
 	public void runScriptOnGroup(ComputeService compute, String groupName,
-			String command) throws RunScriptOnNodesException {
+			Statement command) throws RunScriptOnNodesException {
 		// when you run commands, you can pass options to decide whether
 		// to run it as root, supply or own credentials vs from cache,
 		// and wrap in an init script vs directly invoke

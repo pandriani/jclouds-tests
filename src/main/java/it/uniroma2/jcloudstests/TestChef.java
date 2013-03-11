@@ -46,14 +46,17 @@ public class TestChef {
 			// Build the runlist for the deployed nodes
 			System.out
 					.println("Configuring node runlist in the Chef server...");
-			List<String> runlist = new RunListBuilder().addRecipe("java")
-					.addRecipe("tomcat").addRecipe("myapp").build();
+			List<String> runlist = new RunListBuilder()
+			.addRecipe("timezone")
+			.addRecipe("java")		
+			.addRecipe("tomcat")
+			.addRecipe("myapp").build();
 			chef.updateBootstrapConfigForGroup(runlist, group);
 			//chef.updateRunListForGroup(runlist, group);
 			Statement chefBootstrap = chef.createBootstrapScriptForGroup(group);
 
 			 helper.runScriptOnGroup(computeService, "worker-node",
-			 chefBootstrap.render(OsFamily.UNIX));
+			 chefBootstrap);
 
 		} catch (Exception ex) {
 			ex.printStackTrace();

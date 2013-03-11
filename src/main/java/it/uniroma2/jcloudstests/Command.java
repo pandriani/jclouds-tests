@@ -90,7 +90,7 @@ public class Command {
 										.exec("wget https://s3.amazonaws.com/TesiAndrianiFiorentino/imagetranscoder.war"),
 								Statements
 										.exec("mv imagetranscoder.war /var/lib/tomcat7/webapps"))
-						.render(OsFamily.UNIX));
+						);
 	}
 
 	public void installClientNodes(PROVIDER provider)
@@ -110,7 +110,7 @@ public class Command {
 								Statements.exec("mv imgs ~/"),
 								Statements
 										.exec("wget https://s3.amazonaws.com/TesiAndrianiFiorentino/client-0.0.1-SNAPSHOT-jar-with-dependencies.jar"))
-						.render(OsFamily.UNIX));
+						);
 	}
 
 	/**
