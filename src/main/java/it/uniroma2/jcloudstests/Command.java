@@ -71,7 +71,7 @@ public class Command {
 										+ provider.name()
 										+ "' >> $HOME/.bashrc"),
 								Statements
-										.exec("echo 'export CATALINA_OPTS=\"-Xms256m -Xmx512m\"' >> $HOME/.profile"),
+										.exec("echo 'export CATALINA_OPTS=\"-Xms512m -Xmx512m\"' >> $HOME/.profile"),
 								Statements.exec("echo 'export CLOUD_PROVIDER="
 										+ provider.name()
 										+ "' >> $HOME/.profile"),
@@ -102,15 +102,18 @@ public class Command {
 						.newStatementList(
 								Statements.exec("apt-get -y update"),
 								Statements
-										.exec("apt-get install openjdk-7-jdk"),
+										.exec("apt-get -y install openjdk-7-jdk"),
 								Statements.exec("apt-get -y install unzip"),
 								Statements
 										.exec("wget https://s3.amazonaws.com/TesiAndrianiFiorentino/imgs.zip"),
 								Statements.exec("unzip imgs.zip"),
 								Statements.exec("mv imgs ~/"),
 								Statements
-										.exec("wget https://s3.amazonaws.com/TesiAndrianiFiorentino/client-0.0.1-SNAPSHOT-jar-with-dependencies.jar"))
-						);
+										.exec("wget https://s3.amazonaws.com/TesiAndrianiFiorentino/client-0.0.1-SNAPSHOT-jar-with-dependencies.jar"),
+								Statements
+										.exec("mv client-0.0.1-SNAPSHOT-jar-with-dependencies.jar ~/"))
+			
+				);
 	}
 
 	/**
@@ -125,8 +128,8 @@ public class Command {
 		try {
 			Command cmd = new Command(computeService, helper);
 			// cmd.printNodeGroup(WORKERNODE);
-			cmd.createInstances(WORKERNODE, 1);
-//			cmd.installWorkerNodes(provider);
+			cmd.createInstances(WORKERNODE, 2);
+			cmd.installWorkerNodes(provider);
 
 			//cmd.installClientNodes(provider);
 			
