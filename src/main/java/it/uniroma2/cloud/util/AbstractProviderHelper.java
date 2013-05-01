@@ -70,6 +70,27 @@ public abstract class AbstractProviderHelper implements ProviderHelper {
 		}
 	}
 
+//	public void runScriptOnNode(ComputeService compute, String id,
+//			Statement command) throws RunScriptOnNodesException {
+//		// when you run commands, you can pass options to decide whether
+//		// to run it as root, supply or own credentials vs from cache,
+//		// and wrap in an init script vs directly invoke
+//		ExecResponse response = compute.runScriptOnNode(//
+//				id, // predicate used to select
+//					// nodes
+//				command, // what you actually intend to run
+//				overrideLoginCredentials(getLoginCredentials()) // use
+//																// the
+//																// local
+//																// user
+//																// &
+//						// ssh key
+//						.runAsRoot(true)); // don't attempt to run as
+//											// root (sudo)
+//
+//		System.out.printf("<< node %s: %s%n", id, response.getOutput());
+//	}
+
 	public void runScriptOnInstance(ComputeService compute,
 			String instanceName, String command)
 			throws RunScriptOnNodesException {
@@ -88,7 +109,7 @@ public abstract class AbstractProviderHelper implements ProviderHelper {
 						.runAsRoot(true)); // don't attempt to run as
 											// root (sudo)
 
-		System.out.printf("<< node %s: %s%n", instanceName);
+		System.out.printf("<< node %s: %n", instanceName);
 		System.out.printf("<<     %s%n", response.getOutput());
 	}
 
@@ -107,12 +128,13 @@ public abstract class AbstractProviderHelper implements ProviderHelper {
 		chefConfig.put(ChefProperties.CHEF_VALIDATOR_NAME, chefClientName);
 		chefConfig.put(ChefProperties.CHEF_VALIDATOR_CREDENTIAL,
 				clientCredential);
+		chefConfig.put(ChefProperties.CHEF_VERSION, "10.18.2");
 
 		ChefContext chefContext = ContextBuilder.newBuilder("chef")
 				.endpoint(endpoint)
 				.credentials(chefClientName, clientCredential)
 				.modules(ImmutableSet.<Module> of(new SLF4JLoggingModule()))
-				.overrides(chefConfig).build();
+				.overrides(chefConfig).build(ChefContext.class);
 		return chefContext;
 	}
 

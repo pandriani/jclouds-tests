@@ -19,7 +19,7 @@ import org.jclouds.scriptbuilder.domain.Statements;
 
 public class Command {
 
-	private static final PROVIDER provider = PROVIDER.AWS_EC2; // may be
+	private static final PROVIDER provider = PROVIDER.CLOUDSTACK; // may be
 																// PROVIDER.CLOUDSTACK
 	private static final String WORKERNODE = "worker-node";
 	private static final String MONITORING = "monitoring";
@@ -41,7 +41,6 @@ public class Command {
 		while (nodeIt.hasNext()) {
 			NodeMetadata node = nodeIt.next();
 			System.out.println(node);
-			System.out.println(node.getPublicAddresses().iterator().next());
 		}
 	}
 
@@ -127,11 +126,13 @@ public class Command {
 				.getProviderHelper(provider);
 		try {
 			Command cmd = new Command(computeService, helper);
-			// cmd.printNodeGroup(WORKERNODE);
-			cmd.createInstances(WORKERNODE, 2);
-			cmd.installWorkerNodes(provider);
-
-			//cmd.installClientNodes(provider);
+			cmd.printNodeGroup(WORKERNODE);
+//			cmd.createInstances(WORKERNODE, 2);
+//			cmd.installWorkerNodes(provider);
+//
+//			
+//			cmd.createInstances(CLIENT, 1);
+//			cmd.installClientNodes(provider);
 			
 		} catch (Exception e) {
 			e.printStackTrace();
